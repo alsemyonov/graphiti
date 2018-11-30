@@ -177,6 +177,7 @@ module Graphiti
               filters: {},
               default_filters: {},
               stats: {},
+              links: nil,
               sort_all: nil,
               sorts: {},
               pagination: nil,
