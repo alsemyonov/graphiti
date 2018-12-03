@@ -81,10 +81,10 @@ module Graphiti
     end
 
     def links
+      binding.pry
       @pagination_links ||= if @query.pagination_links?
-        payload = Links::Payload.new(self)
-        payload.generate
-      end
+                              links_payload
+                            end
     end
 
     def save(action: :create)
@@ -154,6 +154,9 @@ module Graphiti
     end
 
     private
+
+    def links_payload
+    end
 
     def persist
       @resource.transaction do
