@@ -7,11 +7,12 @@ module Graphiti
 
     WriteDateTime = create(::DateTime) do |input|
       if input.is_a?(::Date) || input.is_a?(::Time)
-        input = if input.respond_to?(:to_datetime)
-                  input.to_datetime
-                else
-                  ::DateTime.parse(input.to_s)
-                end
+        input =
+          if input.respond_to? :to_datetime
+            input.to_datetime
+          else
+            ::DateTime.parse(input.to_s)
+          end
       end
       input = Dry::Types['json.date_time'][input]
       Dry::Types['strict.date_time'][input] if input
@@ -19,11 +20,12 @@ module Graphiti
 
     ReadDateTime = create(::DateTime) do |input|
       if input.is_a?(::Date) || input.is_a?(::Time)
-        input = if input.respond_to?(:to_datetime)
-                  input.to_datetime
-                else
-                  ::DateTime.parse(input.to_s)
-                end
+        input =
+          if input.respond_to? :to_datetime
+            input.to_datetime
+          else
+            ::DateTime.parse(input.to_s)
+          end
       end
       input = Dry::Types['json.date_time'][input]
       Dry::Types['strict.date_time'][input].iso8601 if input
