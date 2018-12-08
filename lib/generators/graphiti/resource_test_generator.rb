@@ -9,37 +9,37 @@ module Graphiti
 
     argument :resource, type: :string
     argument :attributes, type: :array, default: [], banner: "field[:type][:index] field[:type][:index]"
-    class_option :'actions',
+    class_option :actions,
       type: :array,
       default: nil,
-      aliases: ['--actions', '-a'],
+      aliases: %w[-a],
       desc: 'Array of controller actions, e.g. "index show destroy"'
 
     desc 'Generates rspec request specs at spec/api'
     def generate
-      generate_resource_specs
+      if actions?('create', 'update', 'destroy')
+        to = "spec/resources/#{resource_name}/writes_spec.rb"
+        template('resource_writes_spec.rb', to)
+      end
+
+      if actions?('index', 'show')
+        to = "spec/resources/#{resource_name}/reads_spec.rb"
+        template('resource_reads_spec.rb', to)
+      end
     end
 
     private
 
     def var
-      dir.singularize
+      resource_name.gsub('/', '_')
     end
 
     def dir
-      @resource.gsub('Resource', '').underscore.pluralize
+      resource_name.pluralize
     end
 
-    def generate_resource_specs
-      if actions?('create', 'update', 'destroy')
-        to = "spec/resources/#{var}/writes_spec.rb"
-        template('resource_writes_spec.rb.erb', to)
-      end
-
-      if actions?('index', 'show')
-        to = "spec/resources/#{var}/reads_spec.rb"
-        template('resource_reads_spec.rb.erb', to)
-      end
+    def resource_name
+      @resource.gsub('Resource', '').underscore
     end
 
     def resource_class

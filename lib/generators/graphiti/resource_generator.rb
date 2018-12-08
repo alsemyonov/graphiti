@@ -9,15 +9,15 @@ module Graphiti
 
     argument :attributes, type: :array, default: [], banner: "field[:type][:index] field[:type][:index]"
 
-    class_option :'omit-comments',
+    class_option :omit_comments,
       type: :boolean,
       default: false,
-      aliases: ['--omit-comments', '-c'],
+      aliases: %w[-c],
       desc: 'Generate without documentation comments'
-    class_option :'actions',
+    class_option :actions,
       type: :array,
       default: nil,
-      aliases: ['--actions', '-a'],
+      aliases: %w[-a],
       desc: 'Array of controller actions to support, e.g. "index show destroy"'
 
     desc "This generator creates a resource file at app/resources, as well as corresponding controller/specs/route/etc"
@@ -55,7 +55,7 @@ module Graphiti
     end
 
     def omit_comments?
-      @options['omit-comments']
+      options.omit_comments?
     end
 
     def responders?
@@ -69,7 +69,7 @@ module Graphiti
 
     def generate_application_resource
       to = File.join('app/resources', class_path, "application_resource.rb")
-      template('application_resource.rb.erb', to)
+      template('application_resource.rb', to)
       require "#{::Rails.root}/#{to}"
     end
 
@@ -78,12 +78,39 @@ module Graphiti
     end
 
     def generate_route
+      depth = 0
+      lines = []
+
+      # Create 'namespace' ladder
+      # namespace :foo do
+      #   namespace :bar do
+      regular_class_path.each do |ns|
+        lines << indent("namespace :#{ns} do\n", depth * 2)
+        depth += 1
+      end
+
       # Rails 5.2 adds `plural_route_name`, fallback to `plural_table_name`
       plural_name = self.try(:plural_route_name) || plural_table_name
 
       code = "resources :#{plural_name}"
       code << %{, only: [#{actions.map { |a| ":#{a}" }.join(', ')}]} if actions.length < 5
       code << "\n"
+
+      # inserts the primary resource
+      # Create route
+      #     resources 'products'
+      lines << indent(code, depth * 2)
+
+      # Create `end` ladder
+      #   end
+      # end
+      until depth.zero?
+        depth -= 1
+        lines << indent("end\n", depth * 2)
+      end
+
+      code = lines.join
+
       inject_into_file 'config/routes.rb', after: /ApplicationResource.*$\n/ do
         indent(code, 4)
       end
@@ -120,7 +147,7 @@ module Graphiti
     end
 
     def type
-      model_klass.name.underscore.pluralize
+      model_klass.model_name.collection
     end
   end
 end

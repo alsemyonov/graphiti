@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe "<%= type %>#update", type: :request do
   subject(:make_request) do
-    jsonapi_put "<%= api_namespace %>/<%= type %>/#{<%= var %>.id}", payload
+    jsonapi_put "<%= api_namespace %>/<%= dir %>/#{<%= var %>.id}", payload
   end
 
   describe 'basic update' do
@@ -13,9 +13,7 @@ RSpec.describe "<%= type %>#update", type: :request do
         data: {
           id: <%= var %>.id.to_s,
           type: '<%= type %>',
-          attributes: {
-            # ... your attrs here
-          }
+          attributes: attributes_for(:<%= var %>)
         }
       }
     end

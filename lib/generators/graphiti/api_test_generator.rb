@@ -8,52 +8,34 @@ module Graphiti
     source_root File.expand_path('../templates', __FILE__)
 
     argument :resource, type: :string
-    class_option :'actions',
+    class_option :actions,
       type: :array,
       default: nil,
-      aliases: ['--actions', '-a'],
+      aliases: %w[-a],
       desc: 'Array of controller actions, e.g. "index show destroy"'
 
     desc 'Generates rspec request specs at spec/api'
     def generate
-      generate_api_specs
+      %w[index show create update destroy].each do |action|
+        next unless actions?(action)
+
+        to = File.join("spec", ApplicationResource.endpoint_namespace, dir, "#{action}_spec.rb"
+        template("#{action}_request_spec.rb", to)
+      end
     end
 
     private
 
     def var
-      dir.singularize
+      resource_name.gsub('/', '_')
     end
 
     def dir
-      @resource.gsub('Resource', '').underscore.pluralize
+      resource_name.pluralize
     end
 
-    def generate_api_specs
-      if actions?('index')
-        to = File.join("spec", ApplicationResource.endpoint_namespace, dir, "index_spec.rb")
-        template('index_request_spec.rb.erb', to)
-      end
-
-      if actions?('show')
-        to = File.join("spec", ApplicationResource.endpoint_namespace, dir, "show_spec.rb")
-        template('show_request_spec.rb.erb', to)
-      end
-
-      if actions?('create')
-        to = File.join("spec", ApplicationResource.endpoint_namespace, dir, "create_spec.rb")
-        template('create_request_spec.rb.erb', to)
-      end
-
-      if actions?('update')
-        to = File.join("spec", ApplicationResource.endpoint_namespace, dir, "update_spec.rb")
-        template('update_request_spec.rb.erb', to)
-      end
-
-      if actions?('destroy')
-        to = File.join("spec", ApplicationResource.endpoint_namespace, dir, "destroy_spec.rb")
-        template('destroy_request_spec.rb.erb', to)
-      end
+    def resource_name
+      @resource.gsub('Resource', '').underscore
     end
 
     def resource_class
