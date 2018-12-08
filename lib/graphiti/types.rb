@@ -81,6 +81,14 @@ module Graphiti
       Dry::Types['params.hash'][input]
     end
 
+    Inet = create(::IPAddr) do |input|
+      if input.is_a?(IPAddr)
+        input
+      else
+        IPAddr.new(input)
+      end
+    end
+
     REQUIRED_KEYS = [:params, :read, :write, :kind, :description]
 
     def self.map
@@ -162,6 +170,13 @@ module Graphiti
             read: Dry::Types['strict.array'],
             write: Dry::Types['strict.array'],
             kind: 'array',
+            description: 'Base Type.'
+          },
+          inet: {
+            params: Inet,
+            read: Dry::Types['coercible.string'],
+            write: Inet,
+            kind: 'scalar',
             description: 'Base Type.'
           }
         }
