@@ -136,7 +136,7 @@ module Graphiti
 
         def infer_type
           if !abstract_class? && infer_model.present?
-            infer_model.model_name.plural
+            infer_model.model_name.plural.to_sym
           elsif name.present?
             name.demodulize.gsub("Resource", "").underscore.pluralize.to_sym
           else
